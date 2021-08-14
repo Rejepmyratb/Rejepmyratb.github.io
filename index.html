@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Display a map on a webpage</title>
+<link href="https://api.mapbox.com/mapbox-gl-js/v2.4.0/mapbox-gl.css" rel="stylesheet">
+<link href="styles.css" rel="stylesheet">
+<script src="https://api.mapbox.com/mapbox-gl-js/v2.4.0/mapbox-gl.js"></script>
+<script src="javascript.js"></script>
+<style>
+</style>
+</head>
+<body>
+	<div class='sidebar'>
+		<div class='heading'>
+		  <h1>Our locations</h1>
+		</div>
+		<div id='listings' class='listings'></div>
+	</div>
+	<div id="map" class="map"></div>
+	<script>
+		if (!('remove' in Element.prototype)) {
+  Element.prototype.remove = function() {
+    if (this.parentNode) {
+      this.parentNode.removeChild(this);
+    }
+  };
+}
+    var monument = [58.3177486583016, 37.969945408742795]
+		mapboxgl.accessToken = 'pk.eyJ1IjoicmVqZXBteXJhdGIiLCJhIjoiY2ttNjhtaHZyMGx4OTJ1b2ZsOGFma3RhNCJ9.uDewMv3NJ-k3Yze_ZGSjqA';
+		
+			var map = new mapboxgl.Map({
+			container: 'map',
+			style: 'mapbox://styles/mapbox/streets-v11',
+			center: [58.3177486583016, 37.969945408742795],
+			zoom: 13,
+			scrollZoom: true
+			});
+		
+			
+	var stores = {
+    "type": "FeatureCollection",
+    "features": [
+      {
+        "type": "Feature",
+        "geometry": {
+          "type": "Point",
+          "coordinates": [
+		  58.3177486583016,37.969945408742795
+          ]
+        },
+        "properties": {
+          "phoneFormatted": "+99361219197",
+          "phone": "+99361219197",
+          "address": "Ylham Seyilgah",
+          "city": "Ashgabat",
+          "country": "Turkmenistan",
+          "crossStreet": "at 15th St NW",
+          "postalCode": "20005",
+          "state": "Ashgabat"
+        }
+      }
+    ]
+  };
+
+stores.features.forEach(function(store, i){
+    store.properties.id = i;
+  });
+
+  map.on('load', function (e) {
+    /* Add the data to your map as a layer */
+    map.addLayer({
+      "id": "locations",
+      "type": "circle",
+      /* Add a GeoJSON source containing place coordinates and information. */
+      "source": {
+        "type": "geojson",
+        "data": stores
+      }
+    });
+	map.on('click', function(e) {
+  /* Determine if a feature in the "locations" layer exists at that point. */
+  var features = map.queryRenderedFeatures(e.point, {
+    layers: ['locations']
+  });
+  
+  /* If yes, then: */
+  if (features.length) {
+    var clickedPoint = features[0];
+    
+    /* Fly to the point */
+    flyToStore(clickedPoint);
+    
+    /* Close all other popups and display popup for clicked store */
+    createPopUp(clickedPoint);
+    
+    /* Highlight listing in sidebar (and remove highlight for all other listings) */
+    var activeItem = document.getElementsByClassName('active');
+    if (activeItem[0]) {
+      activeItem[0].classList.remove('active');
+    }
+    var listing = document.getElementById('listing-' + clickedPoint.properties.id);
+    listing.classList.add('active');
+  }
+});
+	buildLocationList(stores);
+  });
+
+  // create the popup
+var popup = new mapboxgl.Popup({ offset: 25 })
+   .setHTML("<iframe src=https://www.youtube.com/watch?v=-LEDq7iAGy0 frameborder=0 allow=accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture allowfullscreen></iframe>")
+
+// create DOM element for the marker
+var el = document.createElement('div');
+el.id = 'marker';
+
+// create the marker
+new mapboxgl.Marker(el)
+    .setLngLat(monument)
+    .setPopup(popup) // sets a popup on this marker
+    .addTo(map);
+	</script>
+</body>
+</html>
